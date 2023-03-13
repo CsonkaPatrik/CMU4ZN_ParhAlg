@@ -1,22 +1,16 @@
 #include <stdio.h>
+#include <time.h>
 
-int main() {
-   int low=1, high, i, flag;
-   printf("Enter two numbers(intervals): ");
-   scanf("%d", &high);
-   printf("Prime numbers between %d and %d are: ", low, high);
-
-   // iteration until low is not equal to high
+void primeNum(int low, int high) {
+   int i, flag;
    while (low < high) {
       flag = 0;
 
-      // ignore numbers less than 2
       if (low <= 1) {
          ++low;
          continue;
       }
 
-      // if low is a non-prime number, flag will be 1
       for (i = 2; i <= low / 2; ++i) {
 
          if (low % i == 0) {
@@ -28,10 +22,22 @@ int main() {
       if (flag == 0)
          printf("%d ", low);
 
-      // to check prime for the next number
-      // increase low by 1
       ++low;
    }
+}
+
+int main() {
+   int low=1, high;
+   printf("Enter the upper limit: ");
+   scanf("%d", &high);
+   
+   clock_t begin = clock();
+   primeNum(low,high);
+
+   clock_t end = clock();
+   double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+
+   printf("%f", time_spent);
 
    return 0;
 }
