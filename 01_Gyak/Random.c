@@ -2,20 +2,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-void printRandom(int also, int felso)
+void printRandom(int lower, int upper)
 {
         int num = (rand() %
-        (felso - also + 1)) + also;
+        (upper - lower + 1)) + lower;
         printf("%d ", num);
 }
 
 int main()
 {
-    int also = 500, felso = 1000;
+    int lower = 500, upper = 1000;
  
     srand(time(0));
  
-    printRandom(also, felso);
+    printRandom(lower, upper);
  
     return 0;
 }

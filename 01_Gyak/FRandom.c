@@ -11,11 +11,11 @@ float float_rand( float min, float max )
 
 int main()
 {
-    float also = 500, felso = 1000;
+    float lower = 500, upper = 1000;
  
     srand(time(0));
  
-    printf("%lf",float_rand(also, felso));
+    printf("%lf",float_rand(lower, upper));
  
     return 0;
 }
