@@ -1,70 +1,59 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <omp.h>
 #include <time.h>
+#include <stdlib.h>
 
-#define SIZE 10000
+#define N 100000000
 
-void sortArray(int *array);
-int *generateRandomArray(int size);
-int compareIntegers(const void *a, const void *b);
-
-int main()
+int main(int argc, char **argv)
 {
-    int *numbers = generateRandomArray(SIZE); // Tömb generálása random számokkal
+    int sizes[] = {N}; // Csak egy méretű tömb
+    int numSizes = sizeof(sizes) / sizeof(sizes[0]);
 
     int threadCounts[] = {1, 2, 4, 8}; // Különböző szállal való tesztelés
     int numThreadCounts = sizeof(threadCounts) / sizeof(threadCounts[0]);
 
-    for (int i = 0; i < numThreadCounts; i++)
+    for (int i = 0; i < numSizes; i++)
     {
-        printf("Teszt %d szállal:\n", threadCounts[i]);
+        int size = sizes[i];
+        printf("Tömb mérete: %d\n", size);
 
-        double start = omp_get_wtime(); // Mérőóra indítása
-
-        // Szálak létrehozása és indítása
-        omp_set_num_threads(threadCounts[i]);
-#pragma omp parallel
+        for (int j = 0; j < numThreadCounts; j++)
         {
-            sortArray(numbers);
+            int threadCount = threadCounts[j];
+            printf("Szálak száma: %d\n", threadCount);
+
+            double start = omp_get_wtime(); // Mérőóra indítása
+
+            float total_sum = 0;
+
+#pragma omp parallel num_threads(threadCount)
+            {
+                float sum_part = 0;
+
+#pragma omp for
+                for (int l = 0; l <= size; l++)
+                {
+                    sum_part += (rand() % 100000) + 1;
+                }
+
+#pragma omp critical
+                {
+                    total_sum += sum_part;
+                }
+            }
+
+            double end = omp_get_wtime(); // Mérőóra leállítása
+
+            double elapsedTime = (end - start);
+
+            printf("Futási idő: %.6lf sec\n", elapsedTime);
+            printf("Összeg: %.2f\n\n", total_sum);
         }
 
-        double end = omp_get_wtime(); // Mérőóra leállítása
-
-        double elapsedTime = (end - start) * 1000;
-        printf("Futási idő: %.2lf ms\n\n", elapsedTime);
+        printf("----------------------------------------\n");
     }
 
-    printf("Kész!\n");
     return 0;
 }
 
-void sortArray(int *array)
-{
-    qsort(array, SIZE, sizeof(int), compareIntegers);
-}
-
-int *generateRandomArray(int size)
-{
-    int *array = (int *)malloc(size * sizeof(int));
-
-    srand(time(NULL));
-    for (int i = 0; i < size; i++)
-    {
-        array[i] = rand() % 100 + 1;
-    }
-
-    return array;
-}
-
-int compareIntegers(const void *a, const void *b)
-{
-    int num1 = *(const int *)a;
-    int num2 = *(const int *)b;
-
-    if (num1 < num2)
-        return -1;
-    if (num1 > num2)
-        return 1;
-    return 0;
-}
