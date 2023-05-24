@@ -1,79 +1,75 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
+#include <stdlib.h>
 
-#define SIZE 10000
+#define THREADS_COUNT 4
+#define N 100000000
 
-void *sortArray(void *arg);
-int *generateRandomArray(int size);
-int compareIntegers(const void *a, const void *b);
+typedef struct
+{
+    int start;
+    int end;
+    int *part_sum;
+} ThreadData;
+
+void *sum(void *arg);
 
 int main()
 {
-    int *numbers = generateRandomArray(SIZE); // Tömb generálása random számokkal
-
     int threadCounts[] = {1, 2, 4, 8}; // Különböző szállal való tesztelés
     int numThreadCounts = sizeof(threadCounts) / sizeof(threadCounts[0]);
 
     for (int i = 0; i < numThreadCounts; i++)
     {
-        printf("Teszt %d szállal:\n", threadCounts[i]);
+        int threadCount = threadCounts[i];
+        pthread_t thread_id[threadCount];
+        ThreadData thread_data[threadCount];
 
-        pthread_t threads[threadCounts[i]];
-        double startTime, endTime;
+        int border = N / threadCount;
+        int total_sum = 0;
 
-        startTime = clock(); // Mérőóra indítása
+        clock_t start = clock(); // Mérések kezdete
 
-        // Szálak létrehozása és indítása
-        for (int j = 0; j < threadCounts[i]; j++)
+        for (int j = 0; j < threadCount; j++)
         {
-            pthread_create(&threads[j], NULL, sortArray, numbers);
+            thread_data[j].start = j * border;
+            thread_data[j].end = (j + 1) * border;
+            thread_data[j].part_sum = malloc(sizeof(int)); // Allocate memory for each thread's part_sum
+
+            pthread_create(&thread_id[j], NULL, sum, &thread_data[j]);
         }
 
-        // Várakozás a szálak befejezésére
-        for (int j = 0; j < threadCounts[i]; j++)
+        for (int j = 0; j < threadCount; j++)
         {
-            pthread_join(threads[j], NULL);
+            pthread_join(thread_id[j], NULL);
+            total_sum += *(thread_data[j].part_sum); // Access the value pointed by part_sum
+            free(thread_data[j].part_sum); // Free the allocated memory
         }
 
-        endTime = clock(); // Mérőóra leállítása
+        clock_t end = clock(); // Mérések vége
+        double total = (double)(end - start) / CLOCKS_PER_SEC; // Számítás a helyes eltelt időért
 
-        double elapsedTime = (endTime - startTime) / (double)CLOCKS_PER_SEC * 1000.0;
-        printf("Futási idő: %.2lf ms\n\n", elapsedTime);
+        printf("szal: %d\n", threadCount);
+        printf("osszeg (10 000 elem): %d\n", total_sum);
+        printf("futasi ido: %lf (sec)\n", total);
+        printf("\n");
     }
 
-    printf("Kész!\n");
     return 0;
 }
 
-void *sortArray(void *arg)
+void *sum(void *arg)
 {
-    int *array = (int *)arg;
-    qsort(array, SIZE, sizeof(int), compareIntegers);
-    pthread_exit(NULL);
-}
-
-int *generateRandomArray(int size)
-{
-    int *array = (int *)malloc(size * sizeof(int));
+    ThreadData *data = (ThreadData *)arg;
+    int *part_sum = data->part_sum;
+    *part_sum = 0;
 
     srand(time(NULL));
-    for (int i = 0; i < size; i++)
+    for (int i = data->start; i < data->end; i++)
     {
-        array[i] = rand() % 100 + 1;
+        *part_sum += (rand() % N) + 1;
     }
 
-    return array;
-}
-
-int compareIntegers(const void *a, const void *b)
-{
-    int num1 = *(const int *)a;
-    int num2 = *(const int *)b;
-
-    if (num1 < num2)
-        return -1;
-    if (num1 > num2)
-        return 1;
-    return 0;
+    return NULL;
 }
