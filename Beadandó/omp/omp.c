@@ -3,11 +3,11 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define N 100000000
+#define N 1000000
 
 int main(int argc, char **argv)
 {
-    int sizes[] = {N}; // Csak egy méretű tömb
+    int sizes[] = {N};
     int numSizes = sizeof(sizes) / sizeof(sizes[0]);
 
     int threadCounts[] = {1, 2, 4, 8}; // Különböző szállal való tesztelés
@@ -16,14 +16,14 @@ int main(int argc, char **argv)
     for (int i = 0; i < numSizes; i++)
     {
         int size = sizes[i];
-        printf("Tömb mérete: %d\n", size);
+        printf("Array size: %d\n", size);
 
         for (int j = 0; j < numThreadCounts; j++)
         {
             int threadCount = threadCounts[j];
-            printf("Szálak száma: %d\n", threadCount);
+            printf("Thread: %d\n", threadCount);
 
-            double start = omp_get_wtime(); // Mérőóra indítása
+            double start = omp_get_wtime();
 
             float total_sum = 0;
 
@@ -43,17 +43,15 @@ int main(int argc, char **argv)
                 }
             }
 
-            double end = omp_get_wtime(); // Mérőóra leállítása
+            double end = omp_get_wtime();
 
             double elapsedTime = (end - start);
 
-            printf("Futási idő: %.6lf sec\n", elapsedTime);
-            printf("Összeg: %.2f\n\n", total_sum);
+            printf("Elapsed time: %.6lf sec\n", elapsedTime);
+            printf("sum: %.2f\n\n", total_sum);
         }
 
-        printf("----------------------------------------\n");
     }
 
     return 0;
 }
-
