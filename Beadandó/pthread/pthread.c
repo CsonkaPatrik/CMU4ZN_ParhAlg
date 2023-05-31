@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #define THREADS_COUNT 4
-#define N 100000000
+#define N 1000000
 
 typedef struct
 {
@@ -29,7 +29,7 @@ int main()
         int border = N / threadCount;
         int total_sum = 0;
 
-        clock_t start = clock(); // Mérések kezdete
+        clock_t start = clock();
 
         for (int j = 0; j < threadCount; j++)
         {
@@ -47,12 +47,12 @@ int main()
             free(thread_data[j].part_sum); // Free the allocated memory
         }
 
-        clock_t end = clock(); // Mérések vége
-        double total = (double)(end - start) / CLOCKS_PER_SEC; // Számítás a helyes eltelt időért
+        clock_t end = clock();
+        double total = (double)(end - start) / CLOCKS_PER_SEC;
 
-        printf("szal: %d\n", threadCount);
-        printf("osszeg (10 000 elem): %d\n", total_sum);
-        printf("futasi ido: %lf (sec)\n", total);
+        printf("thread: %d\n", threadCount);
+        printf("sum: %d\n", total_sum);
+        printf("elapsed time: %lf (sec)\n", total);
         printf("\n");
     }
 
